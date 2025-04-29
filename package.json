@@ -1,0 +1,36 @@
+{
+  "name": "imagegen-mcp",
+  "version": "1.0.0",
+  "description": "MCP server to generate images from text using OpenAI's API",
+  "keywords": ["mcp", "openai", "image", "generation", "imagegen", "mcp-server"],
+  "author": "Anthony Maurin",
+  "homepage": "https://github.com/spartanz51/imagegen-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/spartanz51/imagegen-mcp/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spartanz51/imagegen-mcp.git"
+  },
+  "license": "ISC",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.10.2",
+    "dotenv": "^16.3.1",
+    "install": "^0.13.0",
+    "node-fetch": "^3.3.2",
+    "npm": "^11.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}
