@@ -1,4 +1,5 @@
 import fetch from 'node-fetch';
+import FormData from 'form-data';
 
 // Constants for use in Zod schemas and other runtime contexts
 export const MODELS = {
@@ -89,9 +90,24 @@ export interface ImageGenerationResponse {
   data: ImageObject[];
 }
 
+export interface ImageEditRequest {
+  image: string; // Base64 encoded image
+  prompt: string;
+  mask?: string; // Optional base64 encoded mask image
+  model?: ImageModel;
+  n?: number;
+  size?: ImageSize;
+  response_format?: ImageResponseFormat;
+  quality?: ImageQuality;
+  user?: string;
+  output_format?: ImageOutputFormat;
+  output_compression?: number;
+}
+
 export class OpenAIImageClient {
   private apiKey: string;
   private baseUrl: string = 'https://api.openai.com/v1/images/generations';
+  private editUrl: string = 'https://api.openai.com/v1/images/edits';
   private allowedModels: Record<string, ImageModel>;
 
   constructor(apiKey: string, allowedModels?: string[]) {
@@ -137,6 +153,124 @@ export class OpenAIImageClient {
    */
   getDefaultModel(): ImageModel {
     return Object.values(this.allowedModels)[0];
+  }
+
+  /**
+   * Edit images using OpenAI's image edit API
+   * @param params The parameters for image editing
+   * @returns A promise that resolves to the generated images
+   */
+  async editImages(params: ImageEditRequest): Promise<ImageGenerationResponse> {
+    if (!params.image) {
+      throw new Error('Image is required');
+    }
+    
+    if (!params.prompt) {
+      throw new Error('Prompt is required');
+    }
+
+    // Set default values for parameters that aren't specified
+    const defaults = {
+      model: MODELS.GPT_IMAGE, // Only dall-e-2 and gpt-image-1 are supported for edits
+      n: 1,
+      size: SIZES.S1024,
+      response_format: RESPONSE_FORMATS.B64_JSON,
+      quality: QUALITIES.AUTO,
+      output_format: OUTPUT_FORMATS.PNG,
+      output_compression: 100,
+    };
+
+    // Apply defaults for any missing parameters
+    params = { ...defaults, ...params };
+    
+    // Validate that the specified model is allowed and supported for edits
+    if (params.model) {
+      const isModelAllowed = Object.values(this.allowedModels).includes(params.model);
+      if (!isModelAllowed) {
+        throw new Error(`Model "${params.model}" is not allowed. Allowed models: ${Object.values(this.allowedModels).join(', ')}`);
+      }
+      
+      // Check if model is supported for edits
+      if (params.model !== MODELS.DALLE2 && params.model !== MODELS.GPT_IMAGE) {
+        throw new Error('Only dall-e-2 and gpt-image-1 are supported for image editing');
+      }
+    }
+
+    // Model-specific validation
+    if (params.model === MODELS.DALLE2) {
+      // For dall-e-2, ensure the image is PNG and we only have one
+      if (params.image.indexOf(',') !== -1) {
+        throw new Error('dall-e-2 only supports a single image for editing');
+      }
+    }
+
+    // Size validation based on model
+    if (params.model === MODELS.DALLE2 && params.size && 
+        params.size !== '256x256' && params.size !== '512x512' && params.size !== '1024x1024') {
+      throw new Error('dall-e-2 only supports sizes 256x256, 512x512, or 1024x1024');
+    }
+
+    const formData = new FormData();
+    
+    // Handle multiple images for gpt-image-1
+    if (params.model === MODELS.GPT_IMAGE && params.image.includes(',')) {
+      // Split multiple base64 images
+      const images = params.image.split(',');
+      images.forEach((img, index) => {
+        const buffer = this.base64ToBuffer(img);
+        formData.append('image', buffer, { filename: `image${index}.png` });
+      });
+    } else {
+      // Single image case
+      const buffer = this.base64ToBuffer(params.image);
+      formData.append('image', buffer, { filename: 'image.png' });
+    }
+    
+    // Add mask if provided
+    if (params.mask) {
+      const maskBuffer = this.base64ToBuffer(params.mask);
+      formData.append('mask', maskBuffer, { filename: 'mask.png' });
+    }
+    
+    // Add other parameters
+    formData.append('prompt', params.prompt);
+    if (params.model) formData.append('model', params.model);
+    if (params.n) formData.append('n', params.n.toString());
+    if (params.size) formData.append('size', params.size);
+    if (params.response_format) formData.append('response_format', params.response_format);
+    if (params.quality) formData.append('quality', params.quality);
+    if (params.user) formData.append('user', params.user);
+
+    if (params.model !== MODELS.DALLE2) {
+      formData.append('response_format', undefined);
+    }
+
+    const response = await fetch(this.editUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json() as { error: { message: string } };
+      throw new Error(`OpenAI API error: ${errorData.error?.message || response.statusText}`);
+    }
+
+    return response.json() as Promise<ImageGenerationResponse>;
+  }
+  
+  /**
+   * Helper method to convert base64 to Buffer
+   */
+  private base64ToBuffer(base64: string): Buffer {
+    // Remove data URL prefix if present
+    const base64Data = base64.includes('base64,') ? 
+      base64.split('base64,')[1] : 
+      base64;
+    
+    return Buffer.from(base64Data, 'base64');
   }
 
   /**

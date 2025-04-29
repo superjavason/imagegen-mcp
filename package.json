@@ -2,7 +2,14 @@
   "name": "imagegen-mcp",
   "version": "1.0.0",
   "description": "MCP server to generate images from text using OpenAI's API",
-  "keywords": ["mcp", "openai", "image", "generation", "imagegen", "mcp-server"],
+  "keywords": [
+    "mcp",
+    "openai",
+    "image",
+    "generation",
+    "imagegen",
+    "mcp-server"
+  ],
   "author": "Anthony Maurin",
   "homepage": "https://github.com/spartanz51/imagegen-mcp#readme",
   "bugs": {
@@ -23,7 +30,10 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.10.2",
+    "@types/form-data": "^2.2.1",
     "dotenv": "^16.3.1",
+    "form-data": "^4.0.2",
+    "formdata-node": "^6.0.3",
     "install": "^0.13.0",
     "node-fetch": "^3.3.2",
     "npm": "^11.3.0"

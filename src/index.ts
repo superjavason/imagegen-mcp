@@ -106,5 +106,68 @@ server.tool("text-to-image",
   }
 );
 
+server.tool("image-to-image",
+  { 
+    image: z.string().describe("The image to edit. Must be a base64-encoded string."),
+    prompt: z.string().describe("A text description of the desired image(s)"),
+    mask: z.string().optional().describe("Optional mask image whose transparent areas indicate where image should be edited. Must be a base64-encoded PNG."),
+    model: z.enum(objectValuesToZodEnum(imageClient.getAllowedModels())).optional().describe("The model to use. Only gpt-image-1 and dall-e-2 are supported.").default(imageClient.getDefaultModel()),
+    size: z.enum(objectValuesToZodEnum(SIZES)).optional().describe("Size of the generated image").default(SIZES.S1024),
+    output_format: z.enum(objectValuesToZodEnum(OUTPUT_FORMATS)).optional().describe("The format of the generated image").default(OUTPUT_FORMATS.PNG),
+    output_compression: z.number().optional().describe("The compression of the generated image").default(100),
+    quality: z.enum(objectValuesToZodEnum(QUALITIES)).optional().describe("The quality of the generated image").default(QUALITIES.AUTO),
+    n: z.number().optional().describe("The number of images to generate").default(1),
+  },
+  async ({ image, prompt, mask, model, size, output_format, output_compression, quality, n }) => {
+    try {
+      const result = await imageClient.editImages({
+        image,
+        prompt,
+        mask,
+        model: model as any,
+        size: size as any,
+        response_format: RESPONSE_FORMATS.B64_JSON,
+        output_format: output_format as any,
+        output_compression: output_compression as any,
+        quality: quality as any,
+        n: n as any
+      });
+
+      if (result.data.length === 0) {
+        throw new Error("No images were generated");
+      }
+
+      const imageData = result.data[0].b64_json;
+      if (!imageData) {
+        throw new Error("Image data not found in response");
+      }
+
+      return {
+        content: [
+          { 
+            type: "image", 
+            data: imageData,
+            mimeType: "image/png"
+          },
+          {
+            type: "text",
+            text: result.data[0].revised_prompt || prompt
+          }
+        ]
+      };
+    } catch (error: unknown) {
+      console.error("Error editing image:", error);
+      return {
+        content: [
+          { 
+            type: "text", 
+            text: `Error editing image: ${error instanceof Error ? error.message : String(error)}` 
+          }
+        ]
+      };
+    }
+  }
+);
+
 const transport = new StdioServerTransport();
 await server.connect(transport);
