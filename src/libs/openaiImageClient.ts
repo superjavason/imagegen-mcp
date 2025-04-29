@@ -1,5 +1,8 @@
 import fetch from 'node-fetch';
 import FormData from 'form-data';
+import { v4 as uuidv4 } from 'uuid';
+import fs from 'fs';
+import path from 'path';
 
 // Constants for use in Zod schemas and other runtime contexts
 export const MODELS = {
@@ -358,6 +361,47 @@ export class OpenAIImageClient {
 
     return response.json() as Promise<ImageGenerationResponse>;
   }
+
+  /**
+   * Saves an image to a file with a UUID filename
+   * @param imageData Base64 encoded image data
+   * @param outputFormat The format to save the image as (default: png)
+   * @returns The path to the saved file
+   */
+  saveImageToTempFile(imageData: string, outputFormat: ImageOutputFormat = OUTPUT_FORMATS.PNG): string {
+    // Remove data URL prefix if present
+    const base64Data = imageData.includes('base64,') ? 
+      imageData.split('base64,')[1] : 
+      imageData;
+    
+    const buffer = Buffer.from(base64Data, 'base64');
+    const uuid = uuidv4();
+    const filePath = path.join('/tmp', `${uuid}.${outputFormat}`);
+    
+    fs.writeFileSync(filePath, buffer);
+    
+    return filePath;
+  }
+
+  /**
+   * Saves an image from a generation response to a file with a UUID filename
+   * @param response The image generation response
+   * @param index The index of the image to save (default: 0)
+   * @param outputFormat The format to save the image as (default: png)
+   * @returns The path to the saved file
+   * @throws Error if the response does not contain base64 image data
+   */
+  saveResponseImageToTempFile(
+    response: ImageGenerationResponse,
+    index: number = 0,
+    outputFormat: ImageOutputFormat = OUTPUT_FORMATS.PNG
+  ): string {
+    if (!response.data[index]?.b64_json) {
+      throw new Error('Response does not contain base64 image data');
+    }
+    
+    return this.saveImageToTempFile(response.data[index].b64_json, outputFormat);
+  }
 }
 
 /**
@@ -369,4 +413,8 @@ export class OpenAIImageClient {
  *   n: 1,
  *   size: SIZES.S1024
  * });
+ * 
+ * // Save the generated image to a file
+ * const filePath = client.saveResponseImageToTempFile(images);
+ * console.log(`Image saved to: ${filePath}`);
  */ 

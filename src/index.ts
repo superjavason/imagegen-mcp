@@ -79,6 +79,9 @@ server.tool("text-to-image",
         throw new Error("Image data not found in response");
       }
 
+      // Save the image to a temporary file
+      const filePath = imageClient.saveImageToTempFile(imageData, output_format);
+
       return {
         content: [
           { 
@@ -88,7 +91,7 @@ server.tool("text-to-image",
           },
           {
             type: "text",
-            text: result.data[0].revised_prompt || text
+            text: filePath
           }
         ]
       };
@@ -142,6 +145,9 @@ server.tool("image-to-image",
         throw new Error("Image data not found in response");
       }
 
+      // Save the image to a temporary file
+      const filePath = imageClient.saveImageToTempFile(imageData, output_format);
+
       return {
         content: [
           { 
@@ -151,7 +157,7 @@ server.tool("image-to-image",
           },
           {
             type: "text",
-            text: result.data[0].revised_prompt || prompt
+            text: filePath
           }
         ]
       };
