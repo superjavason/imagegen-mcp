@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@huggingface/inference':
-        specifier: ^4.6.1
-        version: 4.6.1
+        specifier: 4.5.0
+        version: 4.5.0
       '@modelcontextprotocol/sdk':
         specifier: ^1.10.2
         version: 1.17.1
@@ -219,8 +219,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@huggingface/inference@4.6.1':
-    resolution: {integrity: sha512-GjEYAoW88rZKthi4OTP+Lq0yi82MywVKEKm2zLDR6BePCinpDyhTPracDPBXSl4guxenYKcoKmitFjqS/zk/sg==}
+  '@huggingface/inference@4.5.0':
+    resolution: {integrity: sha512-cb75teSIeaR4sZCYSigK0xSqPxZ9gVqZK7W+h6gLJiJvvJD+R4sTFC9jnMx3iWJXDEFiXs1D+fSBBuMnO5EWgA==}
     engines: {node: '>=18'}
 
   '@huggingface/jinja@0.5.1':
@@ -911,7 +911,7 @@ snapshots:
   '@esbuild/win32-x64@0.25.8':
     optional: true
 
-  '@huggingface/inference@4.6.1':
+  '@huggingface/inference@4.5.0':
     dependencies:
       '@huggingface/jinja': 0.5.1
       '@huggingface/tasks': 0.19.34

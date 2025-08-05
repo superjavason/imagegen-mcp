@@ -1,6 +1,6 @@
 {
   "name": "multi-provider-imagegen-mcp",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "MCP server supporting multiple AI providers for image generation - OpenAI, Stability AI, Replicate, HuggingFace",
   "keywords": [
     "mcp",
@@ -41,7 +41,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@huggingface/inference": "^4.6.1",
+    "@huggingface/inference": "4.5.0",
     "@modelcontextprotocol/sdk": "^1.10.2",
     "@types/form-data": "^2.2.1",
     "dotenv": "^16.3.1",

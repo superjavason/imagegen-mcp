@@ -78,7 +78,7 @@ export class StabilityImageProvider extends BaseImageProvider {
       this.allowedModels = { ...STABILITY_MODELS };
     }
     
-    console.log("Available Stability AI models:", Object.values(this.allowedModels));
+            console.error("Available Stability AI models:", Object.values(this.allowedModels));
   }
 
   getAllowedModels(): Record<string, StabilityModel> {

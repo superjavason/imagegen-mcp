@@ -111,7 +111,7 @@ export class OpenAIImageProvider extends BaseImageProvider {
       this.allowedModels = { ...OPENAI_MODELS };
     }
     
-    console.log("Available OpenAI models:", Object.values(this.allowedModels));
+            console.error("Available OpenAI models:", Object.values(this.allowedModels));
   }
 
   getAllowedModels(): Record<string, ImageModel> {

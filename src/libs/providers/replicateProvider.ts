@@ -61,7 +61,7 @@ export class ReplicateImageProvider extends BaseImageProvider {
       this.allowedModels = { ...REPLICATE_MODELS };
     }
     
-    console.log("Available Replicate models:", Object.keys(this.allowedModels));
+            console.error("Available Replicate models:", Object.keys(this.allowedModels));
   }
 
   getAllowedModels(): Record<string, ReplicateModel> {

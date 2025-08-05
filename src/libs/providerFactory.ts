@@ -39,7 +39,7 @@ export class ImageProviderFactory {
       try {
         const provider = this.createProvider(providerType);
         this.providers.set(providerType, provider);
-        console.log(`✅ Initialized ${PROVIDER_CONFIGS[providerType].name} provider`);
+                            console.error(`✅ Initialized ${PROVIDER_CONFIGS[providerType].name} provider`);
       } catch (error) {
         console.warn(`⚠️ Failed to initialize ${PROVIDER_CONFIGS[providerType].name} provider: ${error instanceof Error ? error.message : String(error)}`);
       }
@@ -54,14 +54,14 @@ export class ImageProviderFactory {
       const firstProvider = this.providers.keys().next().value;
       if (firstProvider) {
         this.defaultProvider = firstProvider;
-        console.log(`Default provider switched to: ${PROVIDER_CONFIGS[this.defaultProvider].name}`);
+                        console.error(`Default provider switched to: ${PROVIDER_CONFIGS[this.defaultProvider].name}`);
       } else {
         throw new Error('No providers were successfully initialized');
       }
     }
 
-    console.log(`🚀 Image provider factory initialized with ${this.providers.size} provider(s)`);
-    console.log(`📌 Default provider: ${PROVIDER_CONFIGS[this.defaultProvider].name}`);
+                console.error(`🚀 Image provider factory initialized with ${this.providers.size} provider(s)`);
+                console.error(`📌 Default provider: ${PROVIDER_CONFIGS[this.defaultProvider].name}`);
   }
 
   private createProvider(providerType: ProviderType): BaseImageProvider {

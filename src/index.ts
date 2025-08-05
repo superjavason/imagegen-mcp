@@ -56,10 +56,10 @@ if (allowedModels.length > 0) {
 // 初始化提供商工厂
 const providerFactory = ImageProviderFactory.createFromConfig(factoryConfig);
 
-console.log("🎨 Multi-Provider Image Generation MCP Server");
-console.log("Available providers:", providerFactory.getAvailableProviders().join(', '));
-console.log("Provider statistics:");
-console.log(JSON.stringify(providerFactory.getProviderStats(), null, 2));
+console.error("🎨 Multi-Provider Image Generation MCP Server");
+console.error("Available providers:", providerFactory.getAvailableProviders().join(', '));
+console.error("Provider statistics:");
+console.error(JSON.stringify(providerFactory.getProviderStats(), null, 2));
 
 
 // 获取所有提供商的模型
@@ -111,7 +111,7 @@ server.tool("text-to-image",
         targetModel = providerResult.model;
       }
 
-      console.log(`🎨 Generating image with provider: ${provider || 'auto'}, model: ${targetModel}`);
+                    console.error(`🎨 Generating image with provider: ${provider || 'auto'}, model: ${targetModel}`);
 
       const result = await targetProvider.generateImages({
         prompt: text,
@@ -189,7 +189,7 @@ server.tool("image-to-image",
         targetModel = providerResult.model;
       }
 
-      console.log(`🖼️ Editing image with provider: ${provider || 'auto'}, model: ${targetModel}`);
+                    console.error(`🖼️ Editing image with provider: ${provider || 'auto'}, model: ${targetModel}`);
 
       const result = await targetProvider.editImages({
         images: images,

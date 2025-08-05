@@ -60,7 +60,7 @@ export class HuggingFaceImageProvider extends BaseImageProvider {
       this.allowedModels = { ...HUGGINGFACE_MODELS };
     }
     
-    console.log("Available HuggingFace models:", Object.keys(this.allowedModels));
+            console.error("Available HuggingFace models:", Object.keys(this.allowedModels));
   }
 
   getAllowedModels(): Record<string, HuggingFaceModel> {
