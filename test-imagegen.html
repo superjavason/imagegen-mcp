@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片生成测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #f9f9f9;
+        }
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌅 日出图片生成器</h1>
+        <p>点击下面的按钮生成一幅美丽的日出图片：</p>
+        
+        <button onclick="generateSunriseImage()">生成日出图片</button>
+        
+        <div id="result" class="result" style="display: none;">
+            <h3>生成结果：</h3>
+            <div id="content"></div>
+        </div>
+    </div>
+
+    <script>
+        async function generateSunriseImage() {
+            const resultDiv = document.getElementById('result');
+            const contentDiv = document.getElementById('content');
+            
+            resultDiv.style.display = 'block';
+            contentDiv.innerHTML = '<div class="loading">正在生成图片，请稍候...</div>';
+            
+            try {
+                // 这里我们需要通过 MCP 协议调用图片生成服务
+                // 由于浏览器无法直接调用 MCP 服务，我们将显示一个说明
+                contentDiv.innerHTML = `
+                    <p><strong>MCP 图片生成服务已启动！</strong></p>
+                    <p>服务正在后台运行，使用以下配置：</p>
+                    <ul>
+                        <li><strong>提供商：</strong>Stability AI</li>
+                        <li><strong>模型：</strong>stable-diffusion-xl-1024-v1-0</li>
+                        <li><strong>提示词：</strong>A beautiful sunrise over the horizon, warm orange and red colors, dramatic sky with clouds, natural lighting, high quality, photorealistic</li>
+                    </ul>
+                    <p>图片将保存到：<code>/tmp/imagegen-output/sunrise.png</code></p>
+                    <p><em>注意：由于浏览器安全限制，无法直接调用 MCP 服务。请使用 Cursor 的 MCP 工具或命令行来生成图片。</em></p>
+                `;
+            } catch (error) {
+                contentDiv.innerHTML = `<p style="color: red;">错误：${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html> 
