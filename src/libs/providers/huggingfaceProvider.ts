@@ -1,4 +1,4 @@
-import { InferenceClient } from '@huggingface/inference';
+import { HfInference } from '@huggingface/inference';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'path';
@@ -24,7 +24,7 @@ export const HUGGINGFACE_MODELS = {
 export type HuggingFaceModel = typeof HUGGINGFACE_MODELS[keyof typeof HUGGINGFACE_MODELS];
 
 export class HuggingFaceImageProvider extends BaseImageProvider {
-  private client: InferenceClient;
+  private client: HfInference;
   private allowedModels: Record<string, HuggingFaceModel>;
 
   constructor(config: ProviderConfig) {
@@ -34,7 +34,7 @@ export class HuggingFaceImageProvider extends BaseImageProvider {
       throw new Error('Hugging Face API token is required');
     }
     
-    this.client = new InferenceClient(config.apiKey);
+    this.client = new HfInference(config.apiKey);
     
     // 设置允许的模型
     if (config.allowedModels && config.allowedModels.length > 0) {
