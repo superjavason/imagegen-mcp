@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "image-generator": {
+      "command": "npx",
+      "args": ["multi-provider-imagegen-mcp", "--providers", "stability", "--models", "stable-diffusion-xl-1024-v1-0"],
+      "env": {
+        "STABILITY_API_KEY": "your_stability_api_key_here"
+      }
+    }
+  }
+}

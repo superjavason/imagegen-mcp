@@ -60,6 +60,10 @@ console.error("🎨 Multi-Provider Image Generation MCP Server");
 console.error("Available providers:", providerFactory.getAvailableProviders().join(', '));
 console.error("Provider statistics:");
 console.error(JSON.stringify(providerFactory.getProviderStats(), null, 2));
+console.error("\n📖 Tool Usage Examples:");
+console.error("1. Text-to-image: 'Generate a beautiful sunset over mountains, oil painting style'");
+console.error("2. Image-to-image: 'Edit the background to blue sky with white clouds'");
+console.error("✨ Ready to generate amazing images!");
 
 
 // 获取所有提供商的模型
@@ -84,18 +88,14 @@ const server = new McpServer({
 
 server.tool("text-to-image",
   { 
-    text: z.string().describe("The prompt to generate an image from"),
-    outputPath: z.string().describe("Absolute path where the output file should be saved."),
-    model: z.enum(objectValuesToZodEnum(flatModels)).optional().describe("The model to use (format: provider/model or model name)").default(defaultModel),
-    provider: z.enum(objectValuesToZodEnum(Object.fromEntries(providerFactory.getAvailableProviders().map(p => [p, p])))).optional().describe("The provider to use (auto-detected from model if not specified)"),
-    size: z.enum(objectValuesToZodEnum(SIZES)).optional().describe("Size of the generated image").default(SIZES.S1024),
-    style: z.enum(objectValuesToZodEnum(STYLES)).optional().describe("Style of the image (for supported models)").default(STYLES.VIVID),
-    output_format: z.enum(objectValuesToZodEnum(OUTPUT_FORMATS)).optional().describe("The format of the generated image").default(OUTPUT_FORMATS.PNG),
-    output_compression: z.number().optional().describe("The compression of the generated image").default(100),
-    moderation: z.enum(objectValuesToZodEnum(MODERATION_LEVELS)).optional().describe("The moderation level of the generated image").default(MODERATION_LEVELS.LOW),
-    background: z.enum(objectValuesToZodEnum(BACKGROUNDS)).optional().describe("The background of the generated image").default(BACKGROUNDS.AUTO),
-    quality: z.enum(objectValuesToZodEnum(QUALITIES)).optional().describe("The quality of the generated image").default(QUALITIES.AUTO),
-    n: z.number().optional().describe("The number of images to generate").default(1), 
+    text: z.string().describe("详细的图像生成提示词，描述你想要生成的图像内容、风格、颜色等。例如：'富士山日出的美丽风景画，油画风格，暖色调'"),
+    outputPath: z.string().optional().describe("保存图像的绝对路径。如果不指定，将自动保存到临时目录。例如：'/Users/username/Desktop/image.png'"),
+    model: z.enum(objectValuesToZodEnum(flatModels)).optional().describe(`使用的AI模型。可选模型：${Object.keys(flatModels).slice(0, 5).join(', ')}等。建议使用dall-e-3获得最佳效果`).default(defaultModel),
+    provider: z.enum(objectValuesToZodEnum(Object.fromEntries(providerFactory.getAvailableProviders().map(p => [p, p])))).optional().describe("AI提供商：openai(DALL-E), stability(Stable Diffusion), replicate等。通常会根据模型自动选择"),
+    size: z.enum(objectValuesToZodEnum(SIZES)).optional().describe("图像尺寸。常用：1024x1024(正方形), 1792x1024(横向), 1024x1792(竖向)").default(SIZES.S1024),
+    style: z.enum(objectValuesToZodEnum(STYLES)).optional().describe("图像风格：vivid(生动鲜艳) 或 natural(自然真实)。主要适用于DALL-E 3").default(STYLES.VIVID),
+    output_format: z.enum(objectValuesToZodEnum(OUTPUT_FORMATS)).optional().describe("输出格式：png(推荐), jpeg, webp").default(OUTPUT_FORMATS.PNG),
+    n: z.number().optional().describe("生成图像数量，通常设为1").default(1), 
   },
   async ({ text, model, provider, size, style, output_format, output_compression, moderation, background, quality, n, outputPath }) => {
     try {
@@ -137,13 +137,13 @@ server.tool("text-to-image",
       }
 
       // Save the image to the specified file path or a temporary file
-      const filePath = targetProvider.saveImageToTempFile(imageData, output_format, outputPath);
+      const filePath = targetProvider.saveImageToTempFile(imageData, output_format, outputPath || undefined);
 
       return {
         content: [
           {
             type: "text",
-            text: filePath
+            text: `图像生成成功！🎨\n保存路径：${filePath}\n\n提示词：${text}\n使用模型：${targetModel}\n提供商：${targetProvider.constructor.name}\n图像尺寸：${size}`
           }
         ]
       };
@@ -153,7 +153,7 @@ server.tool("text-to-image",
         content: [
           { 
             type: "text", 
-            text: `Error generating image: ${error instanceof Error ? error.message : String(error)}` 
+            text: `图像生成失败：${error instanceof Error ? error.message : String(error)}\n\n请检查：\n1. API密钥是否正确配置\n2. 提示词是否合适\n3. 模型是否可用\n\n当前配置：\n- 提供商：${providerFactory.getAvailableProviders().join(', ')}\n- 默认模型：${defaultModel}` 
           }
         ]
       };
@@ -163,17 +163,15 @@ server.tool("text-to-image",
 
 server.tool("image-to-image",
   { 
-    images: z.array(z.string()).describe("The images to edit. Must be an array of file paths."),
-    prompt: z.string().describe("A text description of the desired image(s)"),
-    outputPath: z.string().describe("Absolute path where the output file should be saved."),
-    mask: z.string().optional().describe("Optional mask image whose transparent areas indicate where image should be edited. Must be a file path."),
-    model: z.enum(objectValuesToZodEnum(flatModels)).optional().describe("The model to use (format: provider/model or model name)").default(defaultModel),
-    provider: z.enum(objectValuesToZodEnum(Object.fromEntries(providerFactory.getAvailableProviders().map(p => [p, p])))).optional().describe("The provider to use (auto-detected from model if not specified)"),
-    size: z.enum(objectValuesToZodEnum(SIZES)).optional().describe("Size of the generated image").default(SIZES.S1024),
-    output_format: z.enum(objectValuesToZodEnum(OUTPUT_FORMATS)).optional().describe("The format of the generated image").default(OUTPUT_FORMATS.PNG),
-    output_compression: z.number().optional().describe("The compression of the generated image").default(100),
-    quality: z.enum(objectValuesToZodEnum(QUALITIES)).optional().describe("The quality of the generated image").default(QUALITIES.AUTO),
-    n: z.number().optional().describe("The number of images to generate").default(1),
+    images: z.array(z.string()).describe("要编辑的图像文件路径数组。例如：['/path/to/image.jpg']"),
+    prompt: z.string().describe("描述期望编辑效果的文本提示。例如：'将背景改为蓝天白云，保持人物不变'"),
+    outputPath: z.string().optional().describe("保存编辑后图像的绝对路径。如果不指定，将自动保存到临时目录"),
+    mask: z.string().optional().describe("遮罩图像文件路径(PNG格式)。透明区域表示要编辑的部分"),
+    model: z.enum(objectValuesToZodEnum(flatModels)).optional().describe(`使用的AI模型。可选模型：${Object.keys(flatModels).slice(0, 5).join(', ')}等`).default(defaultModel),
+    provider: z.enum(objectValuesToZodEnum(Object.fromEntries(providerFactory.getAvailableProviders().map(p => [p, p])))).optional().describe("AI提供商：openai, stability, replicate等。通常会根据模型自动选择"),
+    size: z.enum(objectValuesToZodEnum(SIZES)).optional().describe("生成图像尺寸：1024x1024, 1792x1024等").default(SIZES.S1024),
+    output_format: z.enum(objectValuesToZodEnum(OUTPUT_FORMATS)).optional().describe("输出格式：png(推荐), jpeg, webp").default(OUTPUT_FORMATS.PNG),
+    n: z.number().optional().describe("生成图像数量，通常设为1").default(1),
   },
   async ({ images, prompt, mask, model, provider, size, output_format, output_compression, quality, n, outputPath }) => {
     try {
@@ -214,13 +212,13 @@ server.tool("image-to-image",
       }
 
       // Save the image to the specified file path or a temporary file
-      const filePath = targetProvider.saveImageToTempFile(imageData, output_format, outputPath);
+      const filePath = targetProvider.saveImageToTempFile(imageData, output_format, outputPath || undefined);
 
       return {
         content: [
           {
             type: "text",
-            text: filePath
+            text: `图像编辑完成！\n保存路径：${filePath}\n\n使用的模型：${targetModel}\n提供商：${targetProvider.constructor.name}`
           }
         ]
       };
@@ -230,7 +228,7 @@ server.tool("image-to-image",
         content: [
           { 
             type: "text", 
-            text: `Error editing image: ${error instanceof Error ? error.message : String(error)}` 
+            text: `图像编辑失败：${error instanceof Error ? error.message : String(error)}\n\n请检查：\n1. 图像文件路径是否正确\n2. API密钥是否有效\n3. 提示词是否合适` 
           }
         ]
       };
