@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "image-generator": {
+      "command": "node",
+      "args": ["dist/index.js", "--providers", "openai", "stability", "--models", "dall-e-3", "stable-diffusion-xl-1024-v1-0"],
+      "env": {
+        "OPENAI_API_KEY": "your_openai_api_key_here",
+        "STABILITY_API_KEY": "your_stability_api_key_here"
+      }
+    }
+  }
+} 
